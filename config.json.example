@@ -1,0 +1,7 @@
+{
+    "bridgePort": 2556,
+    "bridgeHostname": "<your-hostname>",
+    "serverURL": "http://<your-server-url>",
+    "requestPostFields": "id,creationTime,lastEditTime,user,source,checksum,safety,canvasWidth,canvasHeight,tags,favoriteCount,mimeType,contentUrl,thumbnailUrl,relationCount",
+    "userAgent": "szuru-danbooru-ro-bridge/1.0"
+}
