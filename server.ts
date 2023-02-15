@@ -3,11 +3,9 @@ import cfg from "./config.json" assert { type: "json" };
 
 type GenericObject = Record<string, unknown>;
 
-let reqCount = 0;
-const fmt = (t: string) => `${new Date().toISOString()} | #${reqCount} · ${t}`;
+const fmt = (t: string) => `${new Date().toISOString()} | ${t}`;
 
 serve(async (req: Request) => {
-    reqCount++;
     console.log(fmt("Received request"));
     const res = await handler(req);
     console.log(fmt("Done."));
@@ -41,15 +39,23 @@ function transformRequestURL(url: URL): [URL, string | null] {
     const login = url.searchParams.get("login");
     const key = url.searchParams.get("api_key");
     const token = (login && key) ? `Token ${btoa(`${login}:${key}`)}` : null;
+
+    console.log(url.pathname);
     
     if (!url.pathname.startsWith("/posts")) {
         throw { code: 400, msg: "Endpoint must start with /posts" };
-    } else if (url.pathname.split("/")[1].match(/^[0-9]*$/)) {
+    } else if (url.pathname.match(/posts\/[0-9]*$/)) {
         // A single post (by id) is requested in this case
-        return [new URL(`/api/posts/${url.pathname.split("/")[1]}`), token];
+        const newUrl = new URL(`/api/posts`, cfg.serverURL);
+        newUrl.searchParams.append(
+            "query",
+            `id:${url.pathname.split("/posts/")[1]}`
+        );
+        newUrl.searchParams.append("fields", cfg.requestPostFields);
+        return [newUrl, token];
     }
 
-    // A post list is requested otherwise
+    // A post search is requested otherwise
     // Map ratings to szuru-style
     const query = url.searchParams.get("tags")
         ?.replace(/:(g|general|s|safe)($| )/, ":safe")
